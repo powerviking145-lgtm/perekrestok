@@ -12,6 +12,8 @@ const state = {
     upsellShownZones: new Set(),
     giftShown: false,
     pendingFinish: false, // показать «Свободная касса» только после рекомендации (апселл)
+    arStream: null,
+    arOrientationHandler: null,
 };
 
 // ===== НАВИГАЦИЯ =====
@@ -19,6 +21,7 @@ function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + id).classList.add('active');
     state.currentScreen = id;
+    if (id !== 'ar') stopAR();
 }
 
 // ===== ПОИСК =====
@@ -390,6 +393,153 @@ document.getElementById('btn-finish-scan').addEventListener('click', () => {
 
 document.getElementById('btn-finish-close').addEventListener('click', () => {
     document.getElementById('finish-overlay').classList.add('hidden');
+});
+
+// ===== AR-НАВИГАЦИЯ =====
+function getArTargetData() {
+    const next = state.routeItems.find(p => !state.checkedItems.has(p.id));
+    if (!next) return null;
+    const current = state.checkedItems.size === 0
+        ? STORE.startPoint
+        : { x: state.routeItems[state.checkedItems.size - 1].x, y: state.routeItems[state.checkedItems.size - 1].y };
+    const dx = next.x - current.x;
+    const dy = next.y - current.y;
+    if (dx === 0 && dy === 0) return { next, current, targetBearingDeg: 0 };
+    // Карта: x вправо, y вниз. Север = вверх = -y. Угол в градусах: 0 = восток, 90 = север.
+    const rad = Math.atan2(-dy, dx);
+    let deg = (rad * 180 / Math.PI);
+    if (deg < 0) deg += 360;
+    const distCells = Math.sqrt(dx * dx + dy * dy);
+    const distM = Math.round(distCells * STORE.cellSize * 0.04); // примерная метровка
+    return { next, current, targetBearingDeg: deg, distM: Math.max(1, distM) };
+}
+
+function updateARUI() {
+    const data = getArTargetData();
+    const nameEl = document.getElementById('ar-next-name');
+    const zoneEl = document.getElementById('ar-next-zone');
+    const distEl = document.getElementById('ar-distance');
+    const fillEl = document.getElementById('ar-progress-fill');
+    const textEl = document.getElementById('ar-progress-text');
+    const total = state.routeItems.length;
+    const done = state.checkedItems.size;
+
+    if (total > 0) {
+        const pct = Math.round((done / total) * 100);
+        if (fillEl) fillEl.style.width = pct + '%';
+        if (textEl) textEl.textContent = done + ' / ' + total;
+    }
+
+    if (!data) {
+        if (nameEl) nameEl.textContent = 'Все найдено!';
+        if (zoneEl) zoneEl.textContent = '';
+        if (distEl) distEl.textContent = '';
+        return null;
+    }
+    if (nameEl) nameEl.textContent = data.next.name;
+    if (zoneEl) zoneEl.textContent = ZONE_NAMES[data.next.zone];
+    if (distEl) distEl.textContent = '~' + data.distM + ' м';
+    return data;
+}
+
+function updateARArrow(alphaDeg) {
+    const data = getArTargetData();
+    const wrap = document.getElementById('ar-arrow-wrap');
+    if (!wrap) return;
+    if (!data) {
+        wrap.style.opacity = '0.3';
+        wrap.style.transform = 'rotate(0deg)';
+        return;
+    }
+    wrap.style.opacity = '1';
+    // alpha = куда смотрит телефон (0 = север). Стрелка должна смотреть "вперёд" когда телефон смотрит на цель.
+    // Поворот стрелки: цель в направлении (targetBearingDeg). Стрелка вверх = 0. rotate(X): когда X = alpha - targetBearing, стрелка указывает на цель.
+    const rotation = (typeof alphaDeg === 'number' ? alphaDeg : 0) - data.targetBearingDeg;
+    wrap.style.transform = 'rotate(' + rotation + 'deg)';
+}
+
+function stopAR() {
+    if (state.arStream) {
+        state.arStream.getTracks().forEach(t => t.stop());
+        state.arStream = null;
+    }
+    if (state.arOrientationHandler) {
+        window.removeEventListener('deviceorientation', state.arOrientationHandler);
+        state.arOrientationHandler = null;
+    }
+}
+
+function isLikelyDesktop() {
+    return window.innerWidth > 768 || (!('ontouchstart' in window) && !navigator.maxTouchPoints);
+}
+
+function startAR() {
+    const video = document.getElementById('ar-video');
+    const pcHint = document.getElementById('ar-pc-hint');
+    if (!video) return;
+
+    if (isLikelyDesktop() && pcHint) {
+        pcHint.classList.remove('hidden');
+    } else if (pcHint) {
+        pcHint.classList.add('hidden');
+    }
+
+    updateARUI();
+    const data = getArTargetData();
+    updateARArrow(data ? 0 : 0);
+
+    const onOrientation = (e) => {
+        if (e.alpha != null) updateARArrow(e.alpha);
+    };
+
+    const requestOrientation = () => {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then((p) => { if (p === 'granted') enableOrientation(); })
+                .catch(() => { enableOrientation(); });
+        } else {
+            enableOrientation();
+        }
+    };
+
+    function enableOrientation() {
+        state.arOrientationHandler = onOrientation;
+        window.addEventListener('deviceorientation', onOrientation);
+    }
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+            state.arStream = stream;
+            video.srcObject = stream;
+            requestOrientation();
+        })
+        .catch(() => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    state.arStream = stream;
+                    video.srcObject = stream;
+                    requestOrientation();
+                })
+                .catch(() => {
+                    alert('Нет доступа к камере');
+                });
+        });
+}
+
+document.getElementById('btn-open-ar').addEventListener('click', () => {
+    if (state.routeItems.length === 0) return;
+    showScreen('ar');
+    startAR();
+});
+
+document.getElementById('btn-back-ar').addEventListener('click', () => {
+    stopAR();
+    showScreen('map');
+    initMap();
+    renderChecklist();
+    updateProgress();
+    updateNextItem();
+    redrawMap();
 });
 
 // ===== КНОПКИ НАВИГАЦИИ =====

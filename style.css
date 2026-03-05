@@ -53,6 +53,9 @@ body {
 .screen.active {
     display: flex;
 }
+#screen-map {
+    position: relative;
+}
 
 /* ===== ГЛАВНЫЙ ЭКРАН ===== */
 .home-header {
@@ -1408,6 +1411,207 @@ body {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+}
+
+/* ===== КНОПКА AR НА КАРТЕ ===== */
+.btn-ar-entry {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(21, 105, 56, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-ar-entry:active {
+    transform: scale(0.97);
+}
+.btn-ar-entry i {
+    font-size: 16px;
+}
+
+/* ===== ЭКРАН AR ===== */
+.screen-ar {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: #000;
+    display: none;
+    flex-direction: column;
+}
+.screen-ar.active {
+    display: flex;
+}
+
+.ar-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ar-pc-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    padding: 24px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 280px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.ar-pc-hint i {
+    font-size: 48px;
+    color: var(--accent-lime);
+    margin-bottom: 12px;
+}
+.ar-pc-hint p {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.ar-pc-hint span {
+    font-size: 13px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+.ar-pc-hint.hidden {
+    display: none !important;
+}
+
+.ar-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.ar-overlay > * {
+    pointer-events: auto;
+}
+
+.ar-top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: max(env(safe-area-inset-top), 12px) 16px 14px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.ar-next-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.8);
+}
+.ar-next-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+.ar-next-zone {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+}
+.ar-distance {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-lime);
+}
+
+.ar-arrow-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+}
+.ar-arrow {
+    width: 140px;
+    height: auto;
+    max-height: 200px;
+    transition: transform 0.15s ease-out;
+    filter: drop-shadow(0 4px 20px rgba(21, 105, 56, 0.5));
+}
+
+.ar-progress-bar {
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    border-radius: 14px;
+}
+.ar-progress-bar #ar-progress-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+}
+.ar-progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 99px;
+    overflow: hidden;
+}
+.ar-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent-lime));
+    border-radius: 99px;
+    transition: width 0.3s ease;
+}
+
+.ar-back-btn {
+    position: absolute;
+    bottom: max(env(safe-area-inset-bottom), 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: rgba(255,255,255,0.95);
+    color: var(--primary-dark);
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    pointer-events: auto;
+    transition: transform 0.2s;
+}
+.ar-back-btn:active {
+    transform: translateX(-50%) scale(0.97);
 }
 
 /* ===== SHAKE ===== */
