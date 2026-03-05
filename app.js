@@ -168,7 +168,12 @@ function buildRoutePath() {
     }
 }
 
-document.getElementById('btn-go-shop').addEventListener('click', () => {
+let lastGoShopAt = 0;
+function runGoShop() {
+    if (state.shoppingList.length === 0) return;
+    const now = Date.now();
+    if (now - lastGoShopAt < 400) return;
+    lastGoShopAt = now;
     state.routeItems   = [...state.shoppingList];
     state.checkedItems = new Set();
     state.upsellShownZones = new Set();
@@ -178,7 +183,20 @@ document.getElementById('btn-go-shop').addEventListener('click', () => {
     renderChecklist();
     updateProgress();
     updateNextItem();
+    document.getElementById('route-info').textContent = state.shoppingList.length + ' товаров';
+}
+
+const btnGoShop = document.getElementById('btn-go-shop');
+btnGoShop.addEventListener('click', (e) => {
+    e.preventDefault();
+    runGoShop();
 });
+btnGoShop.addEventListener('touchend', (e) => {
+    if (e.target.closest('#btn-go-shop') && !btnGoShop.disabled) {
+        e.preventDefault();
+        runGoShop();
+    }
+}, { passive: false });
 
 // ===== ЧЕКЛИСТ =====
 function renderChecklist() {
@@ -648,8 +666,4 @@ document.getElementById('btn-send-suggest').addEventListener('click', () => {
     }, 3000);
 });
 
-// ===== route-info =====
-document.getElementById('btn-go-shop').addEventListener('click', () => {
-    document.getElementById('route-info').textContent =
-        state.shoppingList.length + ' товаров';
-}, true);
+// route-info обновляется внутри runGoShop()
