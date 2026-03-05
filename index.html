@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>NaviShop</title>
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ЭКРАН 0: Выбор магазина -->
+<div id="screen-home" class="screen active">
+    <div class="home-header">
+        <div class="beta-badge">Бета</div>
+        <div class="home-logo">
+            <img src="logo.png" alt="Перекрёсток" />
+        </div>
+        <h1 class="home-title">ПЕРЕКРЕСТОК</h1>
+        <p class="home-subtitle">Найдёшь товары в магазине быстрее, чем Галя</p>
+    </div>
+
+    <div class="home-content">
+        <p class="section-label">Доступные магазины</p>
+
+        <div class="store-card available" id="btn-open-store">
+            <div class="store-card-icon"><i class="fa-solid fa-store"></i></div>
+            <div class="store-card-info">
+                <div class="store-card-name">Перекрёсток</div>
+                <div class="store-card-address">Крылатское, ТЦ Крылатский</div>
+                <div class="store-card-badge"><i class="fa-solid fa-circle-check"></i> Доступен</div>
+            </div>
+            <div class="store-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+
+        <div class="store-card coming-soon">
+            <div class="store-card-icon"><i class="fa-solid fa-store"></i></div>
+            <div class="store-card-info">
+                <div class="store-card-name">Перекрёсток</div>
+                <div class="store-card-address">Долгоруковская, 5</div>
+                <div class="store-card-badge store-card-badge-soon"><i class="fa-solid fa-clock"></i> Скоро</div>
+            </div>
+        </div>
+
+        <div class="suggest-block">
+            <div class="suggest-icon"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="suggest-text">
+                <p>Нет вашего магазина?</p>
+                <span>Оставьте заявку — добавим за 3-5 дней</span>
+            </div>
+            <button class="btn-suggest" id="btn-suggest">Добавить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ЭКРАН 1: Главный -->
+<div id="screen-main" class="screen">
+    <div class="header">
+        <button class="btn-back" id="btn-back-home">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="header-text">
+            <h1>Перекрёсток</h1>
+            <p>Крылатское, ТЦ Крылатский</p>
+        </div>
+        <div class="header-logo"><i class="fa-solid fa-store"></i></div>
+    </div>
+
+    <div class="quick-search-wrap">
+        <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Найти товар в магазине..."
+                autocomplete="off"
+            />
+            <div id="search-dropdown" class="search-dropdown hidden"></div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="list">
+            <i class="fa-solid fa-list-check"></i> Мой список
+        </button>
+        <button class="tab" data-tab="popular">
+            <i class="fa-solid fa-star"></i> Ваши популярные
+        </button>
+    </div>
+
+    <div id="tab-list" class="tab-content active">
+        <div class="list-header">
+            <span id="list-count">0 товаров</span>
+            <button id="clear-list" class="btn-clear">
+                <i class="fa-solid fa-trash"></i> Очистить
+            </button>
+        </div>
+        <div id="shopping-list" class="shopping-list">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                <p>Список пуст</p>
+                <span>Найдите товар через поиск выше</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-popular" class="tab-content">
+        <div class="list-header">
+            <span>Часто добавляете</span>
+        </div>
+        <div id="popular-list" class="shopping-list">
+            <div class="empty-state popular-empty">
+                <div class="empty-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <p>Пока пусто</p>
+                <span>Добавляйте товары в список — здесь появятся ваши частые покупки</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-panel">
+        <button id="btn-go-shop" class="btn-primary" disabled>
+            <i class="fa-solid fa-location-crosshairs"></i>
+            Я в магазине — построить маршрут
+        </button>
+    </div>
+</div>
+
+<!-- ЭКРАН 2: Карта и маршрут -->
+<div id="screen-map" class="screen">
+    <div class="map-header">
+        <button id="btn-back-main" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="map-title">
+            <h2>Маршрут</h2>
+            <span id="route-info">0 товаров</span>
+        </div>
+        <button id="btn-reset-route" class="btn-icon-only">
+            <i class="fa-solid fa-rotate"></i>
+        </button>
+    </div>
+
+    <div class="progress-bar-wrap">
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill" style="width:0%"></div>
+        </div>
+        <span id="progress-text">0 / 0 найдено</span>
+    </div>
+
+    <div class="map-wrap">
+        <canvas id="map-canvas"></canvas>
+    </div>
+
+    <div class="next-item-panel">
+        <div class="next-item-label">Следующий:</div>
+        <div id="next-item-name" class="next-item-name">—</div>
+        <div id="next-item-zone" class="next-item-zone">—</div>
+    </div>
+
+    <div class="items-checklist" id="items-checklist"></div>
+</div>
+
+<!-- ЭКРАН 3: Заявка на магазин -->
+<div id="screen-suggest" class="screen">
+    <div class="header">
+        <button class="btn-back" id="btn-back-suggest">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="header-text">
+            <h1>Предложить магазин</h1>
+            <p>Мы добавим его за 3-5 дней</p>
+        </div>
+    </div>
+
+    <div class="suggest-form">
+        <div class="form-group">
+            <label>Название сети</label>
+            <input type="text" id="suggest-name" placeholder="Например: Магнит, Пятёрочка..." />
+        </div>
+        <div class="form-group">
+            <label>Адрес магазина</label>
+            <input type="text" id="suggest-address" placeholder="Город, улица, дом" />
+        </div>
+        <div class="form-group">
+            <label>Ваш Telegram (необязательно)</label>
+            <input type="text" id="suggest-tg" placeholder="@username" />
+            <span class="form-hint">Напишем когда добавим магазин</span>
+        </div>
+
+        <button class="btn-primary" id="btn-send-suggest">
+            <i class="fa-solid fa-paper-plane"></i> Отправить заявку
+        </button>
+
+        <div id="suggest-success" class="suggest-success hidden">
+            <i class="fa-solid fa-circle-check"></i> Заявка отправлена! Спасибо!
+        </div>
+    </div>
+</div>
+
+<!-- КОТИК С ПОДАРКОМ -->
+<div id="gift-bubble" class="gift-bubble hidden">
+    <div class="gift-cat-wrap" id="btn-open-gift">
+        <i class="fa-solid fa-gift"></i>
+    </div>
+    <div class="gift-bubble-ping"></div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ПРОМОКОДА -->
+<div id="gift-modal-overlay" class="gift-modal-overlay hidden">
+    <div class="gift-modal">
+        <div class="gift-modal-icon">
+            <i class="fa-solid fa-gift"></i>
+        </div>
+        <div class="gift-modal-body">
+            <div class="gift-modal-title">Ваш подарок!</div>
+            <div class="gift-modal-text">
+                Промокод на доставку —<br>
+                <span>когда в магазин лень идти</span>
+            </div>
+            <div class="gift-promo-wrap">
+                <div class="gift-promo-code" id="gift-promo-code">NAVISHOP777</div>
+                <button class="gift-copy-btn" id="gift-copy-btn">
+                    <i class="fa-solid fa-copy"></i> Скопировать
+                </button>
+            </div>
+            <div class="gift-copy-success hidden" id="gift-copy-success">
+                <i class="fa-solid fa-circle-check"></i> Скопировано!
+            </div>
+        </div>
+        <button class="gift-modal-close" id="gift-modal-close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+</div>
+
+<!-- UPSELL ПОПАП — АКЦИОННЫЙ ТОВАР -->
+<div id="upsell-modal-overlay" class="upsell-modal-overlay hidden">
+    <div class="upsell-modal">
+
+        <!-- Заголовок с таймером -->
+        <div class="upsell-modal-header">
+            <div class="upsell-personal-badge">
+                <i class="fa-solid fa-star"></i> Только для вас
+            </div>
+            <div class="upsell-timer-wrap">
+                <i class="fa-solid fa-clock"></i>
+                <span id="upsell-timer">10:00</span>
+            </div>
+        </div>
+
+        <!-- Товар -->
+        <div class="upsell-product">
+            <div class="upsell-product-icon" id="upsell-product-icon">
+                <i class="fa-solid fa-cookie"></i>
+            </div>
+            <div class="upsell-product-info">
+                <div class="upsell-product-name" id="upsell-product-name">Название товара</div>
+                <div class="upsell-product-zone" id="upsell-product-zone">Зона</div>
+                <div class="upsell-product-prices">
+                    <span class="upsell-old-price" id="upsell-old-price">150 руб</span>
+                    <span class="upsell-new-price" id="upsell-new-price">99 руб</span>
+                    <span class="upsell-discount" id="upsell-discount">-34%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Текст -->
+        <div class="upsell-modal-text">
+            Этот товар рядом с вами — загляните пока скидка действует!
+        </div>
+
+        <!-- Кнопки -->
+        <div class="upsell-modal-actions">
+            <button class="btn-upsell-route" id="btn-upsell-route">
+                <i class="fa-solid fa-route"></i> Построить маршрут
+            </button>
+            <button class="btn-upsell-skip" id="btn-upsell-skip">
+                Нет, спасибо
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Уведомление "добавь в список" -->
+<div id="upsell-banner" class="upsell-banner hidden">
+    <div class="upsell-content">
+        <div class="upsell-icon"><i class="fa-solid fa-lightbulb"></i></div>
+        <div class="upsell-text">
+            <p>Покупаете несколько товаров?</p>
+            <span>Составьте список — построим оптимальный маршрут!</span>
+        </div>
+    </div>
+    <div class="upsell-actions">
+        <button class="btn-upsell-yes" id="btn-upsell-yes">Составить список</button>
+        <button class="btn-upsell-no" id="btn-upsell-no">Позже</button>
+    </div>
+</div>
+
+<!-- ФИНАЛ: Свободная касса -->
+<div id="finish-overlay" class="finish-overlay hidden">
+    <div class="finish-modal">
+        <div class="finish-emoji">🎉</div>
+        <h2 class="finish-title">Всё найдено!</h2>
+        <p class="finish-subtitle">Отсканируйте товары и оплатите без кассы</p>
+        <div class="finish-card">
+            <div class="finish-card-icon"><i class="fa-solid fa-barcode"></i></div>
+            <div class="finish-card-text">
+                <strong>Свободная касса</strong><br>
+                Отсканируйте товары с помощью нашего сервиса и оплатите сразу, без очереди. За это мы дадим ещё небольшую скидку.
+            </div>
+        </div>
+        <button id="btn-finish-scan" class="btn-primary btn-finish-scan">
+            <i class="fa-solid fa-qrcode"></i> Сканировать и оплатить
+        </button>
+        <p id="finish-stub" class="finish-stub hidden">Сервис ещё в доработке</p>
+        <button id="btn-finish-close" class="btn-finish-close">Закрыть</button>
+    </div>
+</div>
+
+<script src="store-data.js"></script>
+<script src="pathfinding.js"></script>
+<script src="map.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
